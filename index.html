@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BurgerControl Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+<style>
+body { font-family: 'Poppins', sans-serif; }
+.page { display:none }
+.page.active { display:block }
+</style>
+</head>
+<body class="bg-zinc-950 text-white">
+
+<div class="bg-gradient-to-r from-red-600 to-orange-500 p-5 rounded-b-3xl">
+  <div class="flex justify-between">
+    <div>
+      <h1 class="font-bold text-xl">BurgerControl</h1>
+      <p class="text-sm opacity-80">Gestão inteligente</p>
+    </div>
+    <button onclick="novaVenda(); vibrar()" class="bg-white text-black px-4 py-2 rounded-xl font-bold">+ Pedido</button>
+  </div>
+</div>
+
+<!-- DASH -->
+<div id="home" class="page active p-4">
+  <div class="grid grid-cols-2 gap-3">
+    <div class="bg-zinc-900 p-3 rounded-xl"><p>Faturamento</p><h2 id="fat">R$0</h2></div>
+    <div class="bg-zinc-900 p-3 rounded-xl"><p>Lucro</p><h2 id="lucro">R$0</h2></div>
+    <div class="bg-zinc-900 p-3 rounded-xl"><p>Pedidos</p><h2 id="pedidos">0</h2></div>
+    <div class="bg-zinc-900 p-3 rounded-xl"><p>Ticket</p><h2 id="ticket">R$0</h2></div>
+  </div>
+</div>
+
+<!-- PRODUTOS -->
+<div id="produtosPage" class="page p-4">
+  <h2 class="mb-2">Produtos</h2>
+  <div class="flex gap-2">
+    <input id="nomeProd" placeholder="Nome" class="flex-1 p-2 bg-zinc-800 rounded">
+    <input id="precoProd" placeholder="R$" class="w-20 p-2 bg-zinc-800 rounded">
+    <button onclick="addProduto();vibrar()" class="bg-green-500 px-3 rounded">+</button>
+  </div>
+  <div id="listaProdutos" class="mt-3"></div>
+</div>
+
+<!-- ESTOQUE -->
+<div id="estoquePage" class="page p-4">
+  <h2>Estoque</h2>
+  <div class="flex gap-2 mt-2">
+    <input id="nomeItem" placeholder="Item" class="flex-1 p-2 bg-zinc-800 rounded">
+    <input id="qtdItem" placeholder="Qtd" class="w-20 p-2 bg-zinc-800 rounded">
+    <button onclick="addItem();vibrar()" class="bg-orange-500 px-3 rounded">+</button>
+  </div>
+  <div id="listaEstoque" class="mt-3"></div>
+</div>
+
+<!-- VENDAS -->
+<div id="vendasPage" class="page p-4">
+  <h2>Vendas</h2>
+  <div id="listaVendas" class="mt-3"></div>
+</div>
+
+<!-- RELATORIOS -->
+<div id="relatorioPage" class="page p-4">
+  <h2 class="mb-3">Relatórios</h2>
+  <div class="flex gap-2 mb-3">
+    <button onclick="gerarRelatorio(7)" class="bg-zinc-800 px-3 py-2 rounded">7 dias</button>
+    <button onclick="gerarRelatorio(15)" class="bg-zinc-800 px-3 py-2 rounded">15 dias</button>
+    <button onclick="gerarRelatorio(30)" class="bg-zinc-800 px-3 py-2 rounded">30 dias</button>
+  </div>
+  <div id="resultadoRelatorio" class="bg-zinc-900 p-3 rounded"></div>
+</div>
+
+<!-- MENU -->
+<div class="fixed bottom-0 w-full bg-zinc-900 border-t flex justify-around py-2">
+  <button onclick="nav('home');vibrar()"><i class="ri-home-5-line"></i><p class="text-xs">Home</p></button>
+  <button onclick="nav('produtosPage');vibrar()"><i class="ri-restaurant-line"></i><p class="text-xs">Produtos</p></button>
+  <button onclick="nav('estoquePage');vibrar()"><i class="ri-box-3-line"></i><p class="text-xs">Estoque</p></button>
+  <button onclick="nav('vendasPage');vibrar()"><i class="ri-money-dollar-circle-line"></i><p class="text-xs">Vendas</p></button>
+  <button onclick="nav('relatorioPage');vibrar()"><i class="ri-bar-chart-line"></i><p class="text-xs">Relatórios</p></button>
+</div>
+
+<script>
+let produtos = JSON.parse(localStorage.getItem('produtos'))||[]
+let estoque = JSON.parse(localStorage.getItem('estoque'))||[]
+let vendas = JSON.parse(localStorage.getItem('vendas'))||[]
+
+function save(){
+localStorage.setItem('produtos',JSON.stringify(produtos))
+localStorage.setItem('estoque',JSON.stringify(estoque))
+localStorage.setItem('vendas',JSON.stringify(vendas))
+}
+
+function vibrar(){ if(navigator.vibrate) navigator.vibrate(50)}
+
+function nav(p){
+document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'))
+document.getElementById(p).classList.add('active')
+}
+
+function addProduto(){
+let nome=nomeProd.value
+let preco=parseFloat(precoProd.value)
+if(!nome||!preco)return
+produtos.push({nome,preco})
+save();renderProdutos()
+}
+
+function renderProdutos(){
+listaProdutos.innerHTML=''
+produtos.forEach(p=>{
+listaProdutos.innerHTML+=`<div class='bg-zinc-900 p-2 rounded flex justify-between'><span>${p.nome}</span><span>R$${p.preco}</span></div>`
+})}
+
+function addItem(){
+let nome=nomeItem.value
+let qtd=parseInt(qtdItem.value)
+if(!nome||!qtd)return
+estoque.push({nome,qtd})
+save();renderEstoque()
+}
+
+function renderEstoque(){
+listaEstoque.innerHTML=''
+estoque.forEach(e=>{
+listaEstoque.innerHTML+=`<div class='bg-zinc-900 p-2 rounded flex justify-between'><span>${e.nome}</span><span>${e.qtd}</span></div>`
+})}
+
+function novaVenda(){
+if(produtos.length===0)return
+let p=produtos[Math.floor(Math.random()*produtos.length)]
+vendas.push({...p,data:new Date().toISOString()})
+save();renderVendas();atualizar()
+}
+
+function renderVendas(){
+listaVendas.innerHTML=''
+vendas.forEach(v=>{
+listaVendas.innerHTML+=`<div class='bg-zinc-900 p-2 rounded flex justify-between'><span>${v.nome}</span><span>R$${v.preco}</span></div>`
+})}
+
+function atualizar(){
+let receita=vendas.reduce((a,b)=>a+b.preco,0)
+let lucro=receita*0.6
+let ticket=vendas.length?(receita/vendas.length).toFixed(2):0
+fat.innerText='R$'+receita
+lucro.innerText='R$'+lucro
+pedidos.innerText=vendas.length
+ticket.innerText='R$'+ticket
+}
+
+function gerarRelatorio(dias){
+let agora=new Date()
+let filtro=vendas.filter(v=>{
+let data=new Date(v.data)
+return (agora-data)/(1000*60*60*24)<=dias
+})
+let total=filtro.reduce((a,b)=>a+b.preco,0)
+resultadoRelatorio.innerHTML=`
+<p>Período: ${dias} dias</p>
+<p>Vendas: ${filtro.length}</p>
+<p>Faturamento: R$${total}</p>
+<p>Lucro estimado: R$${(total*0.6).toFixed(2)}</p>`
+}
+
+renderProdutos();renderEstoque();renderVendas();atualizar();
+</script>
+
+</body>
+</html>
